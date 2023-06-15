@@ -146,7 +146,7 @@ def save_employee_time_data(workspace_id: str):
     start_date = get_latest_date()
     if start_date is None:
 
-        start_date = datetime.strptime( default_start_date, "%d-%m-%Y").date()
+        start_date = datetime.strptime( default_start_date, "%Y-%m-%d").date()
         end_date = date.today()
 
         for d in rrule( freq= MONTHLY, dtstart=start_date, until=end_date):
