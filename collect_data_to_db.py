@@ -8,10 +8,11 @@ import io
 from dateutil.rrule import rrule, MONTHLY
 from dateutil.relativedelta import relativedelta
 
-from . import config
+import config
 import logging
 
 clockify_api_key = config.CLOCKIFY_API_KEY
+default_start_date = config.DEFAULT_START_DATE
 
 azure_conn = pyodbc.connect(
     'DRIVER={ODBC Driver 17 for SQL Server};'
@@ -145,7 +146,7 @@ def save_employee_time_data(workspace_id: str):
     start_date = get_latest_date()
     if start_date is None:
 
-        start_date = date(2023, 4, 1)
+        start_date = datetime.strptime( default_start_date, "%d-%m-%Y").date()
         end_date = date.today()
 
         for d in rrule( freq= MONTHLY, dtstart=start_date, until=end_date):
