@@ -85,8 +85,8 @@ def if_exist_in_workspaces_clockify(workspace_id) -> bool:
 
     # Determine if data exists based on the count value
     if count > 0:
-        logging.info(f'M:if_exist_in_workspaces_clockify, S:Data Exist')
-        print(f'M:if_exist_in_workspaces_clockify, S:Data Exist')
+        logging.info(f'M:if_exist_in_workspaces_clockify, S:Data Exist, V:{default_start_date}')
+        print(f'M:if_exist_in_workspaces_clockify, S:Data Exist V:{default_start_date}')
         return True
     else:
         logging.info(f'M:if_exist_in_workspaces_clockify, S:Data Does Not Exist')

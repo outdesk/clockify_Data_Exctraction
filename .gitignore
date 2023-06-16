@@ -2,4 +2,3 @@ config.py
 __pycache__
 .venv
 debug.log
-create_tables_on_azure_db.py
