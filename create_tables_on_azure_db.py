@@ -2,7 +2,7 @@ import pyodbc
 
 import config
 
-
+schema = config.SCHEMA
 azure_conn = pyodbc.connect(
     'DRIVER={ODBC Driver 17 for SQL Server};'
     f'SERVER={config.SERVER};'
@@ -16,7 +16,7 @@ cursor = azure_conn.cursor()
 
 def create_landing_clockify_table():
     if not  check_if_table_available("landing_clockify"):
-        cursor.execute(''' CREATE TABLE "landing_clockify" (
+        cursor.execute(f''' CREATE TABLE {schema}."landing_clockify" (
             "id" bigint NOT NULL PRIMARY KEY IDENTITY(1,1),
             "Project" text,
             "Client" varchar(100),
@@ -49,7 +49,7 @@ def create_landing_clockify_table():
 def create_workspaces_clockify_table():
     if not  check_if_table_available("workspaces_clockify"):
         cursor.execute('''
-            CREATE TABLE "workspaces_clockify" (
+            CREATE TABLE {schema}."workspaces_clockify" (
                 "id" bigint NOT NULL PRIMARY KEY IDENTITY(1,1),
                 "WorkspaceId" varchar(100) NOT NULL, 
                 "WorkspaceName" varchar(100) NOT NULL, 

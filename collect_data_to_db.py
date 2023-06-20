@@ -11,6 +11,8 @@ from dateutil.relativedelta import relativedelta
 import config
 import logging
 
+schema = config.SCHEMA
+
 clockify_api_key = config.CLOCKIFY_API_KEY
 default_start_date = config.DEFAULT_START_DATE
 
@@ -37,7 +39,7 @@ def get_all_data_from_workspaces_clockify():
 
     azure_conn.add_output_converter(-155, handle_datetimeoffset)
     # Execute the SQL query to fetch all data from the table
-    query = "SELECT * FROM workspaces_clockify"
+    query = f"SELECT * FROM {schema}.workspaces_clockify"
     cursor.execute(query)
 
     # Fetch all rows from the result set
@@ -64,7 +66,7 @@ def create_workspace_data_row(workspace_id, workspace_name):
         now_time = datetime.now()
 
         # Execute the SQL query to insert data
-        query = "INSERT INTO workspaces_clockify (WorkspaceId, workspaceName, modified_on, created_on) VALUES (?, ?, ?, ?)"
+        query = f"INSERT INTO {schema}.workspaces_clockify (WorkspaceId, workspaceName, modified_on, created_on) VALUES (?, ?, ?, ?)"
         params = (workspace_id, workspace_name, now_time, now_time)
         cursor.execute(query, params)
         azure_conn.commit()
@@ -75,7 +77,7 @@ def create_workspace_data_row(workspace_id, workspace_name):
 
 # Check if data exist in workspaces_clockify table
 def if_exist_in_workspaces_clockify(workspace_id) -> bool:
-    query = f"SELECT COUNT(*) AS count FROM workspaces_clockify WHERE workspaceId = ?"
+    query = f"SELECT COUNT(*) AS count FROM {schema}.workspaces_clockify WHERE workspaceId = ?"
     params = (workspace_id,)
     cursor.execute(query, params)
 
@@ -178,7 +180,7 @@ def create_time_data_row(row, workspace_id: str):
         now_time = datetime.now()
 
         # Execute the SQL query to insert data
-        query = '''INSERT INTO landing_clockify (
+        query = f'''INSERT INTO {schema}.landing_clockify (
             Project, 
             Client, 
             Description, 
@@ -223,7 +225,7 @@ def create_time_data_row(row, workspace_id: str):
         # print(f'M:create_time_data_row, S:Added data with {workspace_id}') 
 
 def if_exist_in_timedata_clockify(workspace_id: str, email: str, start_date: datetime, start_time: str, end_time: str):
-    query = f'''SELECT COUNT(*) AS count FROM landing_clockify WHERE WorkspaceId = ? AND Email = ? AND StartDate = ? AND StartTime = ? AND EndDate = ?'''
+    query = f'''SELECT COUNT(*) AS count FROM {schema}.landing_clockify WHERE WorkspaceId = ? AND Email = ? AND StartDate = ? AND StartTime = ? AND EndDate = ?'''
     params = (workspace_id, email, start_date, start_time, end_time)
     cursor.execute(query, params)
 
@@ -231,7 +233,7 @@ def if_exist_in_timedata_clockify(workspace_id: str, email: str, start_date: dat
 # return lates date in landing_clockify table start date
 def get_latest_date():
     # Execute the SQL query to retrieve the latest date
-    query = "SELECT MAX(startDate) FROM landing_clockify"
+    query = f"SELECT MAX(startDate) FROM {schema}.landing_clockify"
     cursor.execute(query)
 
     # Fetch the result
@@ -294,7 +296,7 @@ def sync_db_with_new_data():
 ##################
 def delete_data():
     # query = "DELETE FROM workspaces_clockify"  
-    query = "DELETE FROM landing_clockify"
+    query = f"DELETE FROM {schema}.landing_clockify"
     cursor.execute(query)
 
     # Commit the transaction to save the changes
