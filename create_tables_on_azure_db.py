@@ -94,6 +94,6 @@ def check_if_table_available(tablename):
 
 ######################################################
 create_landing_clockify_table()
-create_workspaces_clockify_table()
-show_available_tables()
+# create_workspaces_clockify_table()
+# show_available_tables()
 

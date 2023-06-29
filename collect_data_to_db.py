@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone, date
 import struct
+import time
 import pyodbc
 import requests
 import json
@@ -219,8 +220,30 @@ def create_time_data_row(row, workspace_id: str):
             now_time, 
             now_time)
         
-        cursor.execute(query, params)
-        azure_conn.commit()
+        connection = None
+        while True:
+            time.sleep(1)
+            if not connection:  # No connection yet? Connect.
+                connection = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+                                            f'SERVER={config.SERVER};'
+                                            f'DATABASE={config.DATABASE};'
+                                            f'UID={config.UID};'
+                                            f'PWD={config.PWD};')
+                timedatacursor = connection.cursor()
+            try:
+                timedatacursor.execute(query, params)
+                timedatacursor.commit()
+            except pyodbc.Error as pe:
+                print("Error:", pe)
+                if pe.args[0] == "08S01":  # Communication error.
+                    # Nuke the connection and retry.
+                    try:
+                        connection.close()
+                    except:
+                        pass
+                    connection = None
+                    continue
+                raise  # Re-raise any other exception
 
         # print(f'M:create_time_data_row, S:Added data with {workspace_id}') 
 
@@ -276,7 +299,6 @@ def get_employee_time_data(workspaceId: str, startDate: date, endDate: date, api
 
     if response.status_code == 200:
         dataframe = pandas.read_csv(io.StringIO(response.text))
-        print(dataframe.columns)
         dataframe['Worksapce Id'] = workspaceId
         logging.info(f'M:get_employee_time_data, S:Successful, WID:{workspaceId}')
         print(f'M:get_employee_time_data, S:Successful, WID:{workspaceId}') 
