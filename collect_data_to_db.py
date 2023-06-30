@@ -147,36 +147,40 @@ def save_workspace_on_db():
 # Save employee time logged data
 def save_employee_time_data(workspace_id: str):
     start_date = get_latest_date()
+
     if start_date is None:
-
         start_date = datetime.strptime( default_start_date, "%Y-%m-%d").date()
-        end_date = date.today()
 
-        for d in rrule( freq= MONTHLY, dtstart=start_date, until=end_date):
-            start_date_in_loop = d
-            end_date_in_loop = d + relativedelta(months=1)
-            logged_time_data = get_employee_time_data(workspace_id, start_date_in_loop, end_date_in_loop, clockify_api_key)
-            if logged_time_data is not None: insert_time_data_to_db(logged_time_data, workspace_id)
-    else:
-        end_date = (date.today() + relativedelta(days=1)).strftime("%Y-%m-%d")
-        logged_time_data = get_employee_time_data(workspace_id, start_date, end_date, clockify_api_key)
+    end_date = (date.today() + relativedelta(days=1))
+
+    for d in rrule( freq= MONTHLY, dtstart=start_date, until=end_date):
+        start_date_in_loop = d
+        end_date_in_loop = d + relativedelta(months=1)
+        logged_time_data = get_employee_time_data(workspace_id, start_date_in_loop, end_date_in_loop, clockify_api_key)
+        print(f"M:save_employee_time_data, S:started, V:{start_date_in_loop}-{end_date_in_loop}, WID:{workspace_id}")
+        if logged_time_data is not None: insert_time_data_to_db(logged_time_data, workspace_id)
+        print(f"M:save_employee_time_data, S:data collected, V:{start_date_in_loop}-{end_date_in_loop}, WID:{workspace_id}")
+    # logged_time_data = get_employee_time_data(workspace_id, start_date, end_date, clockify_api_key)
 
 
 # Insert eployee logged time data
 def insert_time_data_to_db(time_data_df: pandas.DataFrame, workspace_id: str):
+    print(f"M:insert_time_data_to_db, N:{time_data_df.shape[0]} data rows insertion started, WID:{workspace_id}")
     for _, row in time_data_df.iterrows():
         create_time_data_row(row, workspace_id)
+        # print(f"M:insert_time_data_to_db, N:rows inserted {_}")
 
 
 # Create empoyee time data row to the landing_clockify table
 def create_time_data_row(row, workspace_id: str):
-    is_exist = if_exist_in_timedata_clockify(
-        workspace_id, 
-        row['Email'], 
-        datetime.strptime(row['Start Date'], "%d/%m/%Y").strftime("%Y-%m-%d"), 
-        row['Start Time'], 
-        row['End Time']
-        )
+    # is_exist = if_exist_in_timedata_clockify(
+    #     workspace_id, 
+    #     row['Email'], 
+    #     datetime.strptime(row['Start Date'], "%d/%m/%Y").strftime("%Y-%m-%d"), 
+    #     row['Start Time'], 
+    #     row['End Time']
+    #     )
+    is_exist = False
     if not is_exist:
         now_time = datetime.now()
 
@@ -233,6 +237,7 @@ def create_time_data_row(row, workspace_id: str):
             try:
                 timedatacursor.execute(query, params)
                 timedatacursor.commit()
+                break
             except pyodbc.Error as pe:
                 print("Error:", pe)
                 if pe.args[0] == "08S01":  # Communication error.
